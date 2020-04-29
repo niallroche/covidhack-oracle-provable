@@ -4,6 +4,8 @@ import ast
 import requests
 import os
 
+from response_parser import parse_response
+
 """
 The Smart Contract caller can pass in data to be processed, this can be urls to fetch and required headers and parameters
 
@@ -24,8 +26,13 @@ req = requests.request(arg[0], arg[1], **kwargs)
 
 # check if post processor params were included
 
+# if post processor params were included then call the parser
+# parsed_response_text = response_parser.parse_response(req, **kwargs)
+parsed_response_text = parse_response(req, **kwargs)
+
 # print text result on single line
-print(req.text.replace('\n',''))
+# print(req.text.replace('\n',''))
+print(parsed_response_text.replace('\n',''))
 
 # option if always json
 # print(json.loads(req.text))
