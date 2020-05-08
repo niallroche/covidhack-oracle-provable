@@ -1,5 +1,6 @@
 # covidhack-oracle-provable
-**Purpose**
+
+**Purpose:**
 A repository to manage (a set of) Oracle(s) to support smart (legal) contracts that can respond to global events such as:
 * Pandemics (such as COVID-19)
 * Civil Unrest
