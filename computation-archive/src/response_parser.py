@@ -81,6 +81,7 @@ def parse_response(res, **kwargs):
                     "event_type": "pandemic",
                     "event_name": "COVID-19",
                     "event_designation_date": "2020-03-11T00:16:26-00:00", # WHO press release and twitter 4:26 PM GMT
+                    "event_category": "https://www.wikidata.org/wiki/Q81068910", # schema.org defined event for covid-19 related events
 
                     "resulting_action": "action_by_government",
                     "resulting_action_source": "government_UK",
@@ -88,6 +89,65 @@ def parse_response(res, **kwargs):
                     "date_of_closure": "2020-03-23T00:00:00-00:00",
                     # "business_type": ["hairdressers", "barbers", "beauty and nail salons, including piercing and tattoo parlours'"]
                   }
+    test = "test"
+
+    schema_codid_announcement = {
+        "@context": "http://schema.org",
+        "@type": "SpecialAnnouncement",
+        "name": "Stanford announce COVID-19 testing facility",
+        "text": "",
+        "datePosted": "2020-03-16",
+        "url": "http://med.stanford.edu/news/all-news/2020/03/stanford-offers-drive-through-coronavirus-test.html",
+        "category": "https://www.wikidata.org/wiki/Q81068910",
+        "about" : {
+           "@type": "CovidTestingFacility",
+           "name": "Stanford Health Care",
+           "url": "https://stanfordhealthcare.org/"
+        }
+    }
+
+    schema_school_closure = {
+        "@context": "http://schema.org",
+        "@type": "SpecialAnnouncement",
+        "name": "School Closure information for Eastergate School",
+        "text": "School closure information has been published.",
+        "datePosted": "2020-03-17",
+        "expires": "2020-03-24",
+        "category": "https://www.wikidata.org/wiki/Q81068910",
+        "schoolClosuresInfo": "http://example.org/schools/school/eastergate-cofe-primary-school/closures",
+        "webFeed": {
+          "@type": "DateFeed",
+          "@url": "http://example.org/schools/school/eastergate-cofe-primary-school/closures",
+          "encodingFormat": "application/rss+atom"
+        },
+        "about" : {
+            "@type": "School",
+            "name": "Eastergate School",
+            "url": "http://example.org/schools/school/eastergate-cofe-primary-school/",
+            "location": "..."
+        }
+    }
+
+    schema_business_closure = {
+        "@context": "http://schema.org",
+        "@type": "SpecialAnnouncement",
+        "name": "Closing certain businesses and venues",
+        "text": "Closing certain businesses and venues",
+        "datePosted": "2020-04-24", #this is the date updated, not first posted
+        # "expires": "2020-03-24",
+        "category": "https://www.wikidata.org/wiki/Q81068910",
+        "businessClosuresInfo": "https://www.gov.uk/government/publications/further-businesses-and-premises-to-close/further-businesses-and-premises-to-close-guidance", # adapted from school closure
+
+        "announcementLocation": "uk", # CivicStructure geoCovers place
+        # "category:" "SpecialAnnouncement",
+
+        "webFeed": {
+          "@type": "DateFeed",
+          "@url": "https://www.gov.uk/government/publications/further-businesses-and-premises-to-close/further-businesses-and-premises-to-close-guidance",
+          "encodingFormat": "text/html"
+        }
+        # could list types of local business affected
+    }
 
     parsed_text = json.dumps(structured_text)
     # parsed_text = '{}'
