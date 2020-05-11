@@ -89,7 +89,6 @@ def parse_response(res, **kwargs):
                     "date_of_closure": "2020-03-23T00:00:00-00:00",
                     # "business_type": ["hairdressers", "barbers", "beauty and nail salons, including piercing and tattoo parlours'"]
                   }
-    test = "test"
 
     schema_codid_announcement = {
         "@context": "http://schema.org",
@@ -149,6 +148,17 @@ def parse_response(res, **kwargs):
         # could list types of local business affected
     }
 
+    """
+    other potential data sources:
+    the R value in the particular jurisdiction, ( possible averaged from multiple sources including WHO)
+    The UK government Joint Biosecurity Centre (JBC) COVID-19 Alert level:
+    
+    Level 1 - COVID-19 is not known to be present in the UK
+    Level 2 - COVID-19 is present in the UK, but the number of cases and transmission is low
+    Level 3 - A COVID-19 epidemic is in general circulation
+    Level 4 - A COVID-19 epidemic is in general circulation; transmission is high or rising exponentially
+    Level 5 - As level 4 and there is a material risk of healthcare services being overwhelmed
+    """
     parsed_text = json.dumps(structured_text)
     # parsed_text = '{}'
 
