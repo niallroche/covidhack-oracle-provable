@@ -23,6 +23,7 @@ A repository to manage (a set of) Oracle(s) to support smart (legal) contracts t
 * http://schema.org Special Announcement
 * https://www.wikidata.org/wiki/Q81068910
 * Government websites
+* legislation.gov.uk
 * https://www.who.int WHO website 
 * Global and local Health information providers
 
