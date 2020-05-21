@@ -1,4 +1,6 @@
 import requests as requests
+from datetime import datetime
+import json
 
 def get_content(*args, **kwargs):
 
@@ -17,14 +19,35 @@ def get_content(*args, **kwargs):
         }
 
     nations_corrected = []
-    for key, value in lates_cases['countries'].items():
+    format_date = "%Y-%m-%d"
 
-        nations_dict = {"nation": value['name']['value'],
-                       "total_cases": value['totalCases']['value'],
-                       "rate": round((value['totalCases']['value'] / population[key]) * 100000, 1),
-                       "total_deaths": value['deaths']['value']}
+    for key, value in nations.items():
 
-        nations_corrected.append(nations_dict)
+        if "name" in value.keys():
+
+            nations_dict = {"nation": value['name']['value'],
+                            "total_cases": value['totalCases']['value'],
+                            "rate": round((value['totalCases']['value'] / population[key]) * 100000, 1),
+                            "total_deaths": value['deaths']['value']}
+
+            if "dailyConfirmedCases" in value.keys():
+
+                latest_date_info = max([v['date'] for v in value['dailyConfirmedCases']])
+                last_month_cases = [v for v in value['dailyConfirmedCases'] if (datetime.strptime(latest_date_info, format_date) - datetime.strptime(v['date'], format_date)).days <= 30]
+
+                nations_dict["total_cases_last_month"] = {"total_cases": sum([v['value'] for v in last_month_cases]),
+                                                          "time_period_start": min([v['date'] for v in last_month_cases]),
+                                                          "time_period_end": max([v['date'] for v in last_month_cases])}
+
+            if 'dailyDeaths' in value.keys():
+                latest_date_info = max([v['date'] for v in value['dailyDeaths']])
+                last_month_deaths = [v for v in value['dailyDeaths'] if (datetime.strptime(latest_date_info, format_date) - datetime.strptime(v['date'], format_date)).days <= 30]
+
+                nations_dict["total_deaths_last_month"] = {"total_cases": sum([v['value'] for v in last_month_deaths]),
+                                                          "time_period_start": min([v['date'] for v in last_month_deaths]),
+                                                          "time_period_end": max([v['date'] for v in last_month_deaths])}
+
+            nations_corrected.append(nations_dict)
 
     regions_corrected = []
     for key, value in regions.items():
@@ -64,5 +87,11 @@ def get_content(*args, **kwargs):
 
     for name, dict_values in zip(['nations', 'region', 'UTLA', 'LTLA'], [nations_corrected, regions_corrected, utlas_corrected, regions_corrected]):
         corona_cases_uk[name] = dict_values
+
+# with open('corona_cases_uk.json', 'w+') as json_file:
+#     json.dump(corona_cases_uk, json_file, indent=4)
+#
+# json_data = json.dumps(corona_cases_uk, indent=4)
+# print(json_data)
 
     return corona_cases_uk

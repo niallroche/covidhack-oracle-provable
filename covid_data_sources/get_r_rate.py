@@ -1,6 +1,7 @@
 import requests as requests
 from lxml import html
 import re
+import json
 
 def get_content(*args, **kwargs):
 
@@ -25,6 +26,9 @@ def get_content(*args, **kwargs):
             regions.append(regions_dict)
 
     r_rate_data['regions'] = regions
+
+    # with open('r_rate_data.json', 'w+') as json_file:
+    #     json.dump(r_rate_data, json_file, indent=4)
 
     return r_rate_data
 
