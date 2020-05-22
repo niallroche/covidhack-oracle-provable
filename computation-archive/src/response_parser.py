@@ -164,6 +164,7 @@ def parse_response(res, **kwargs):
     sub-paragraph (l)
     "":"(iv)moving home;"
     "url": "https://www.legislation.gov.uk/uksi/2020/500/regulation/2/made"
+    "xml_url": "https://www.legislation.gov.uk/uksi/2020/500/regulation/2/made/data.xml"
     "amendment":"S.I. 2020/447"
     "amendment_date":"12/05/2020 GMT+1???"
     "moving_home_restriction_start_date":"2020-03-23"
