@@ -23,6 +23,7 @@ service: oracle-pandemic
 provider:
   name: aws
   runtime: python3.7
+#  runtime: python3.6
 
 # you can overwrite defaults here
   stage: dev
@@ -84,6 +85,13 @@ functions:
           path: /check_corona_cases_uk
           method: get
 
+  get_uk_infection_rate_level:
+    handler: handler.get_uk_infection_rate_level
+
+    events:
+      - http:
+          path: /get_uk_infection_rate_level
+          method: get
   hello:
     handler: handler.hello
 #    The following are a few example events you can configure
@@ -92,6 +100,9 @@ functions:
     events:
       - http:
           path: /hello
+          method: get
+      - http:
+          path: /hello1
           method: get
 #      - websocket: $connect
 #      - s3: ${env:BUCKET}
@@ -137,3 +148,16 @@ functions:
 #     NewOutput:
 #       Description: "Description for the output"
 #       Value: "Some output value"
+
+plugins:
+  - serverless-python-requirements
+
+custom:
+  pythonRequirements:
+#    pythonBin: /Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.7/bin/python3.7
+#    dockerizePip: false
+    dockerizePip: true
+#    fileName: requirements.txt
+#    dockerizePip: non-linux
+#    dockerFile: prod_env_dockerfile/Dockerfile
+    dockerFile: Dockerfile
