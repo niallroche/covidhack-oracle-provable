@@ -1,0 +1,36 @@
+{
+  "main": {
+    "type": "dataset",
+    "name": "COVID-19 UK Gov Dataset",
+    "dateCreated": "2020-03-13T10:17:09",
+    "author": "Mishcon de Reya LLC",
+    "license": "CC0: Public Domain Dedication",
+    "price": "0",
+    "files": [
+      {
+        "contentType": "text/plain",
+        "contentLength": "525047",
+        "compression": "plain",
+        "index": 0,
+        "url": "http://QmbMLrxJTnKJfgY72YasaXr49JxjzfAbrbppfnCgPWFFAP/sample_1000.csv"
+      },
+      {
+        "contentType": "application/json",
+        "contentLength": "525047",
+        "compression": "plain",
+        "index": 0,
+        "url": "ipfs://QmbMLrxJTnKJfgY72YasaXr49JxjzfAbrbppfnCgPWFFAP/schema.json"
+      },
+      {
+        "contentType": "text/html",
+        "url": "https://https://www.gov.uk/guidance/the-r-number-in-the-uk"
+      }
+    ],
+    "datePublished": "2020-03-13T10:24:05"
+  },
+  "additionalInformation": {
+    "description": "Data files related to UK deaths and cases related to COVID-19, containing raw data available from uk gov and processed data files into a data schema usable by smart contracts",
+    "copyrightHolder": "Mishcon de Reya LLC",
+    "categories": ["Health"]
+  }
+}
