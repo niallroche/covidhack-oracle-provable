@@ -1,0 +1,7 @@
+{
+  "name": "ipfshandler",
+  "version": "0.1",
+  "dependencies": {
+    "@pinata/sdk": "^1.1.10"
+  }
+}

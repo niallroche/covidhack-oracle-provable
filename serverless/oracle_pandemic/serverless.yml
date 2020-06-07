@@ -1,33 +1,20 @@
-# Welcome to Serverless!
-#
-# This file is the main config file for your service.
-# It's very minimal at this point and uses default values.
-# You can always add more config options for more control.
-# We've included some commented out config examples here.
-# Just uncomment any of them to get that config option.
-#
-# For full config options, check the docs:
-#    docs.serverless.com
-#
-# Happy Coding!
+
+# This file is the main config file for the oracle service.
 
 service: oracle-pandemic
-# app and org for use with dashboard.serverless.com
-#app: your-app-name
-#org: your-org-name
-
-# You can pin your service to only deploy with a specific Serverless version
-# Check out our docs for more details
-# frameworkVersion: "=X.X.X"
 
 provider:
   name: aws
   runtime: python3.7
-#  runtime: python3.6
 
-# you can overwrite defaults here
+  iamRoleStatements:
+    - Effect: 'Allow'
+      Action:
+        - 'lambda:InvokeFunction'
+      Resource:
+        - 'arn:aws:lambda:eu-west-2:519411350235:function:dev-save_to_ipfs'
+
   stage: dev
-#  region: us-west-2
   region: eu-west-2
 
 # you can add statements to the Lambda function's IAM Role here
@@ -49,6 +36,10 @@ provider:
 # you can define service wide environment variables here
 #  environment:
 #    variable1: value1
+#  TODO load from AWS Secrets eventually
+  environment:
+    PINATA_API_KEY: ${file(./secrets_${self:provider.stage}.json):PINATA_API_KEY}
+    PINATA_SECRET_API_KEY: ${file(./secrets_${self:provider.stage}.json):PINATA_SECRET_API_KEY}
 
 # you can add packaging information here
 #package:
@@ -92,6 +83,34 @@ functions:
       - http:
           path: /get_uk_infection_rate_level
           method: get
+
+  save_to_ipfs:
+    handler: handler.saveToIPFS # required, handler set in AWS Lambda
+    name: ${self:provider.stage}-save_to_ipfs # optional, Deployed Lambda name
+    description: utility to forward data to IPFS
+    runtime: nodejs12.x # optional overwrite, default is provider runtime
+    memorySize: 512 # optional, in MB, default is 1024
+    timeout: 10 # optional, in seconds, default is 6
+#    provisionedConcurrency: 3 # optional, Count of provisioned lambda instances
+#    reservedConcurrency: 5 # optional, reserved concurrency limit for this function. By default, AWS uses account concurrency limit
+    tracing: PassThrough # optional, overwrite, can be 'Active' or 'PassThrough'
+
+  #useful for testing, but removed for production to avoid misuse
+#    events:
+#      - http:
+#          path: /putipfs
+#          method: post
+
+  load_from_ipfs:
+    handler: handler.load_from_ipfs
+    name: ${self:provider.stage}-load_from_ipfs # optional, Deployed Lambda name
+    runtime: nodejs12.x # optional overwrite, default is provider runtime
+
+#    events:
+#      - http:
+#          path: /getipfs
+#          method: get
+
   hello:
     handler: handler.hello
 #    The following are a few example events you can configure
@@ -152,6 +171,7 @@ functions:
 plugins:
   - serverless-python-requirements
 
+#this is needed as the lxml libs need to be packaged
 custom:
   pythonRequirements:
 #    pythonBin: /Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.7/bin/python3.7
