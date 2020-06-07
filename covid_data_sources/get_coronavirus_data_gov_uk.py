@@ -4,6 +4,8 @@ import json
 
 def get_content(*args, **kwargs):
 
+    # Takes the JSON files that are used to transfer the information to generate the dashboards in coronavirus.data.gov.uk
+    # This allows to get the information in real time
     lates_cases = requests.get('https://c19downloads.azureedge.net/downloads/data/landing.json').json()
     population = requests.get('https://c19pub.azureedge.net/assets/population/population.json').json()
     nations = requests.get('https://c19downloads.azureedge.net/downloads/data/countries_latest.json').json()
@@ -21,6 +23,10 @@ def get_content(*args, **kwargs):
     nations_corrected = []
     format_date = "%Y-%m-%d"
 
+    # The rate is calculated within the dashboard of coronavirus.data.gov.uk by dividing:
+    # (Total cases for a region / population for a region) * 100000
+    # This is calculation is replicated using the same information transferred for the calculation in the dashboard of coronavirus.data.gov.uk
+    # The rest of the information is the same used in coronavirus.data.gov.uk
     for key, value in nations.items():
 
         if "name" in value.keys():
@@ -32,7 +38,10 @@ def get_content(*args, **kwargs):
 
             if "dailyConfirmedCases" in value.keys():
 
+                # Gets the latest date of the information available
                 latest_date_info = max([v['date'] for v in value['dailyConfirmedCases']])
+
+                # Filters the latest dailyConfirmedCases for the latest month (30 days) counting backwards from the latest date of the information available
                 last_month_cases = [v for v in value['dailyConfirmedCases'] if (datetime.strptime(latest_date_info, format_date) - datetime.strptime(v['date'], format_date)).days <= 30]
 
                 nations_dict["total_cases_last_month"] = {"total_cases": sum([v['value'] for v in last_month_cases]),
@@ -40,7 +49,11 @@ def get_content(*args, **kwargs):
                                                           "time_period_end": max([v['date'] for v in last_month_cases])}
 
             if 'dailyDeaths' in value.keys():
+
+                # Gets the latest date of the information available
                 latest_date_info = max([v['date'] for v in value['dailyDeaths']])
+
+                # Filters the latest dailyDeaths for the latest month (30 days) counting backwards from the latest date of the information available
                 last_month_deaths = [v for v in value['dailyDeaths'] if (datetime.strptime(latest_date_info, format_date) - datetime.strptime(v['date'], format_date)).days <= 30]
 
                 nations_dict["total_deaths_last_month"] = {"total_cases": sum([v['value'] for v in last_month_deaths]),

@@ -5,10 +5,12 @@ import json
 def get_content(*args, **kwargs):
 
    response = requests.get('http://www.legislation.gov.uk/uksi/2020/350/schedule/2/data.xml')
-   xml_dict = xmltodict.parse(response.text)
 
+   # Converts XML feed to dictionary for quicker and easier iteration
+   xml_dict = xmltodict.parse(response.text)
    parts = xml_dict['Legislation']['Secondary']['Schedules']['Schedule']['ScheduleBody']['Part']
 
+   # Function to iterate over some parts of the function to get the desired information
    def get_business_type(list_values, name):
 
       if 'Text' in name['P1para'].keys() and 'P3' not in name['P1para'].keys():
