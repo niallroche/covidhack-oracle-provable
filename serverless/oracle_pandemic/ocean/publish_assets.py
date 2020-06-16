@@ -45,7 +45,6 @@ faucet_url = ocn.config.get('keeper-contracts', 'faucet.url')
 """ 
 2) Set up publisher account in Ocean
 """
-
 # Get a publisher account
 publisher_acct = create_account(faucet_url, wait=True)
 print("Publisher account address: {}".format(publisher_acct.address))
@@ -55,7 +54,6 @@ print("Publisher account Ocean balance: {:>6.1f}".format(ocn.accounts.balance(pu
 """ 
 3) Prepare metadata
 """
-
 # Example of response after storing the dataset in a distributed file system
 response = {'IpfsHash': 'QmdgRMZzczorCywKqKZfKnvbzR9KgDgJuZJ3fw1z95YsRZ',
             'PinSize': 10615,

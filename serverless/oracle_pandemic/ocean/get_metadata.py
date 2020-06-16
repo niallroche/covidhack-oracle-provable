@@ -14,7 +14,6 @@ import json
 def generate_metadata_dict(response, metadata_dict=None, gateway_host="https://ipfs.io"):
 
     def get_content_type(url, type_url=None, gateway_host="https://ipfs.io"):
-
         # Convert to the right url to fetch the content type
         if type_url is not None:
             if "ipfs" in type_url:
