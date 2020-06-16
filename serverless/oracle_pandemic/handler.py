@@ -1,9 +1,51 @@
+"""
+MIT License
+
+Copyright (c) 2020 Niall Roche
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+"""
+
 import json
 
-# from covid_data_sources.get_coronavirus_data_gov_uk import get_content
 from covid_data_sources import get_coronavirus_data_gov_uk
 from covid_data_sources import get_r_rate
 from covid_data_sources import get_business_types_regulated
+from ipfs.IPFShandler   import pin_json_to_ipfs
+
+"""
+TODO notes
+trigger store of content
+use queue
+subscribe to results
+when results are available then assemble and return
+caching needs to be considered
+if modified since & etag
+hash of all data, source and derived computed
+store this until the underlying data changes
+give a request id that can be queried later
+may need mapping between request and hashed state
+need to store state, use day as timestamp and pull from ipfs?s3/db
+hash of refs to hashes
+wait for responses first
+
+"""
 
 def check_pandemic(event, context):
     body = is_pandemic_in_force(event)
@@ -17,7 +59,13 @@ def check_pandemic(event, context):
 
 def check_corona_cases_uk(event, context):
     body = get_corona_cases_uk(event, context)
-
+    reference = pin_json_to_ipfs(body)
+    print(reference)
+    if reference is not None:
+        ipfs_data = json.loads(reference)
+        print(ipfs_data)
+        ipfs_data_body = json.loads(ipfs_data["body"])
+        print(ipfs_data_body)
     response = {
         "statusCode": 200,
         "body": json.dumps(body)
@@ -27,7 +75,7 @@ def check_corona_cases_uk(event, context):
 
 def get_uk_alert_level(event, context):
     # check for regional specific queries
-    level = {"current_level": 3}
+    level = {"current_level": 4}
 
     response = {
         "statusCode": 200,
