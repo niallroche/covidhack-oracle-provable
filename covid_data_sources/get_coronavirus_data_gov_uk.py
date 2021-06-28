@@ -24,136 +24,113 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import requests
+import requests as requests
 from datetime import datetime
 import json
 
-
 def get_content(*args, **kwargs):
-    """
-    :param args:
-    :param kwargs:
-    :return: dictionary with "overview", "nation", "region", "utla", "ltla" as sub-dictionaries
-            with values for each: total_cases, rate, and total_deaths
-    """
 
-    # Using https://coronavirus.data.gov.uk api
-    ENDPOINT = "https://api.coronavirus.data.gov.uk/v1/data"
-    AREA_TYPES = ["overview", "nation", "region", "utla", "ltla"]
-    # AREA_NAMES = ["england", "scotland", "northern ireland", "wales"]
+    # Takes the JSON files that are used to transfer the information to generate the dashboards in coronavirus.data.gov.uk
+    # This allows to get the information in real time
+    lates_cases = requests.get('https://c19downloads.azureedge.net/downloads/data/landing.json').json()
+    population = requests.get('https://c19pub.azureedge.net/assets/population/population.json').json()
+    nations = requests.get('https://c19downloads.azureedge.net/downloads/data/countries_latest.json').json()
+    regions = requests.get('https://c19downloads.azureedge.net/downloads/data/regions_latest.json').json()
+    utlas = requests.get('https://c19downloads.azureedge.net/downloads/data/utlas_latest.json').json()
+    ltla = requests.get('https://c19downloads.azureedge.net/downloads/data/ltlas_latest.json').json()
 
+    corona_cases_uk = {
+            "Total number of lab-confirmed UK cases": lates_cases['overview']['K02000001']['totalCases']['value'],
+            "Daily number of lab-confirmed UK cases": lates_cases['overview']['K02000001']['newCases']['value'],
+            "Total number of COVID-19 associated UK deaths": lates_cases['overview']['K02000001']['deaths']['value'],
+            "Daily number of COVID-19 associated UK deaths": lates_cases['overview']['K02000001']['latestDeaths']['value'],
+        }
+
+    nations_corrected = []
     format_date = "%Y-%m-%d"
-    date = datetime.now().strftime(format_date)
 
-    corona_cases_uk = {}
-    for areaType in AREA_TYPES:
+    # The rate is calculated within the dashboard of coronavirus.data.gov.uk by dividing:
+    # (Total cases for a region / population for a region) * 100000
+    # This is calculation is replicated using the same information transferred for the calculation in the dashboard of coronavirus.data.gov.uk
+    # The rest of the information is the same used in coronavirus.data.gov.uk
+    for key, value in nations.items():
 
-        filters = [
-            f"areaType={areaType}",
-            # f"date={date}"
-            # f"areaName={areaName}"
-        ]
+        if "name" in value.keys():
 
-        if areaType == "nation":
-            dailyCases = "newCasesByPublishDate"
-            cumulativeCases = "cumCasesByPublishDate"
-            cumulativeCasesRate = "cumCasesByPublishDateRate"
-            latestBy = "newCasesByPublishDate"
-        else:
-            dailyCases = "newCasesBySpecimenDate"
-            cumulativeCases = "cumCasesBySpecimenDate"
-            cumulativeCasesRate = "cumCasesBySpecimenDateRate"
-            latestBy = "newCasesBySpecimenDate"
+            nations_dict = {"nation": value['name']['value'],
+                            "total_cases": value['totalCases']['value'],
+                            "rate": round((value['totalCases']['value'] / population[key]) * 100000, 1),
+                            "total_deaths": value['deaths']['value']}
 
-        structure = {
-            "date": "date",
-            "name": "areaName",
-            "code": "areaCode",
-            "dailyCases": f"{dailyCases}",
-            "cumulativeCases": f"{cumulativeCases}",
-            "cumulativeCasesRate": f"{cumulativeCasesRate}",
-            "dailyDeaths": "newDeaths28DaysByPublishDate",
-            "cumulativeDeaths": "cumDeaths28DaysByPublishDate",
-            "cumulativeDeathsRate": "cumDeaths28DaysByDeathDateRate"
+            if "dailyConfirmedCases" in value.keys():
 
-            ###########
-            # Total number of deaths since the start of the pandemic of people whose death certificate mentioned
-            # COVID-19 as one of the causes. The data are published weekly by the ONS, NRS and NISRA and there is
-            # a lag in reporting of at least 11 days because the data are based on death registrations
-            ############
-            # "dailyDeaths": "newDailyNsoDeathsByDeathDate",
-            # "cumulativeDeaths": "cumOnsDeathsByRegistrationDate",
-            # "cumulativeDeathsRate":"cumOnsDeathsByRegistrationDateRate"
-        }
+                # Gets the latest date of the information available
+                latest_date_info = max([v['date'] for v in value['dailyConfirmedCases']])
 
-        api_params = {
-            "filters": str.join(";", filters),
-            "structure": json.dumps(structure, separators=(",", ":")),
-            "latestBy": latestBy
-        }
+                # Filters the latest dailyConfirmedCases for the latest month (30 days) counting backwards from the latest date of the information available
+                last_month_cases = [v for v in value['dailyConfirmedCases'] if (datetime.strptime(latest_date_info, format_date) - datetime.strptime(v['date'], format_date)).days <= 30]
 
-        response = requests.get(ENDPOINT, params=api_params, timeout=10)
-        response = response.json()['data']
+                nations_dict["total_cases_last_month"] = {"total_cases": sum([v['value'] for v in last_month_cases]),
+                                                          "time_period_start": min([v['date'] for v in last_month_cases]),
+                                                          "time_period_end": max([v['date'] for v in last_month_cases])}
 
-        if areaType == "overview":
-            response = response[0]
-            corona_cases_uk = {
-                "date": response['date'],
-                "total_cases": response['cumulativeCases'],
-                "daily_cases": response['dailyCases'],
-                "rate": response['cumulativeCasesRate'],
-                "total_deaths": response['cumulativeDeaths'],
-                "daily_deaths": response['dailyDeaths']
-            }
+            if 'dailyDeaths' in value.keys():
 
-        else:
-            dict_values = []
+                # Gets the latest date of the information available
+                latest_date_info = max([v['date'] for v in value['dailyDeaths']])
 
-            for r in response:
+                # Filters the latest dailyDeaths for the latest month (30 days) counting backwards from the latest date of the information available
+                last_month_deaths = [v for v in value['dailyDeaths'] if (datetime.strptime(latest_date_info, format_date) - datetime.strptime(v['date'], format_date)).days <= 30]
 
-                filters = [
-                    f"areaType={areaType}",
-                    # f"date={r['date']}",
-                    f"areaName={r['name']}"
-                ]
+                nations_dict["total_deaths_last_month"] = {"total_cases": sum([v['value'] for v in last_month_deaths]),
+                                                          "time_period_start": min([v['date'] for v in last_month_deaths]),
+                                                          "time_period_end": max([v['date'] for v in last_month_deaths])}
 
-                # Do another request to get the data with all the dates for an area
-                api_params = {
-                    "filters": str.join(";", filters),
-                    "structure": json.dumps(structure, separators=(",", ":")),
-                }
+            nations_corrected.append(nations_dict)
 
-                # Get data specific for an area to filter the data for latest month
-                r_area = requests.get(ENDPOINT, params=api_params, timeout=10)
-                r_area = r_area.json()['data']
+    regions_corrected = []
+    for key, value in regions.items():
 
-                ## Get the data for a month range
-                # Period end is the date of the latest value added
-                time_period_end = r_area[0]['date']
-                last_month_cases_deaths = [v for v in r_area if (
-                                datetime.strptime(time_period_end, format_date) - datetime.strptime(v['date'],
-                                                                                                     format_date)).days <= 30]
-                time_period_start = min([v['date'] for v in last_month_cases_deaths])
+        if key in population.keys():
 
-                dict_values.append({
-                    areaType: r["name"],
-                    "date": r['date'],
-                    "total_cases": r['cumulativeCases'],
-                    "daily_cases": r['dailyCases'],
-                    "rate": r['cumulativeCasesRate'],
-                    "total_deaths": r['cumulativeDeaths'],
-                    "daily_deaths": r['dailyDeaths'],
-                    "total_cases_last_month":{
-                        "total_cases": sum([v['dailyCases'] for v in last_month_cases_deaths if v['dailyCases'] is not None]),
-                                        "time_period_start": time_period_start,
-                                        "time_period_end": time_period_end},
-                    "total_deaths_last_month": {
-                                        "total_deaths": sum([v['dailyDeaths'] for v in last_month_cases_deaths if v['dailyDeaths'] is not None]),
-                                        "time_period_start": time_period_start,
-                                        "time_period_end": time_period_end}
-                })
+            region_dict = {"region": value['name']['value'],
+                           "total_cases": value['totalCases']['value'],
+                           "rate": round((value['totalCases']['value'] / population[key]) * 100000, 1)}
 
-            # Add all the values scraped
-            corona_cases_uk[areaType] = dict_values
+        if region_dict not in regions_corrected:
+            regions_corrected.append(region_dict)
+
+    utlas_corrected = []
+    for key, value in utlas.items():
+
+        if key in population.keys():
+
+            utlas_dict = {"region": value['name']['value'],
+                           "total_cases": value['totalCases']['value'],
+                           "rate": round((value['totalCases']['value'] / population[key]) * 100000, 1)}
+
+        if utlas_dict not in utlas_corrected:
+            utlas_corrected.append(utlas_dict)
+
+    ltla_corrected = []
+    for key, value in ltla.items():
+
+        if key in population.keys():
+
+            ltla_dict = {"region": value['name']['value'],
+                           "total_cases": value['totalCases']['value'],
+                           "rate": round((value['totalCases']['value'] / population[key]) * 100000, 1)}
+
+        if ltla_dict not in ltla_corrected:
+            ltla_corrected.append(ltla_dict)
+
+    for name, dict_values in zip(['nations', 'region', 'UTLA', 'LTLA'], [nations_corrected, regions_corrected, utlas_corrected, regions_corrected]):
+        corona_cases_uk[name] = dict_values
+
+# with open('corona_cases_uk.json', 'w+') as json_file:
+#     json.dump(corona_cases_uk, json_file, indent=4)
+#
+# json_data = json.dumps(corona_cases_uk, indent=4)
+# print(json_data)
 
     return corona_cases_uk
