@@ -25,7 +25,7 @@ SOFTWARE.
 """
 
 __author__ = "Walter Hernandez"
-__copyright__ = "Copyright 2020"
+__copyright__ = "Copyright 2021"
 __credits__ = ["Niall Roche"]
 __license__ = "MIT License"
 __version__ = "1.0"
