@@ -34,6 +34,7 @@ import requests
 import xmltodict
 
 
+
 def get_content(*args, **kwargs):
     response = requests.get('http://www.legislation.gov.uk/uksi/2020/350/schedule/2/data.xml')
 
