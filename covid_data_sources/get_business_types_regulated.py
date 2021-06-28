@@ -30,9 +30,8 @@ __credits__ = ["Niall Roche"]
 __license__ = "MIT License"
 __version__ = "1.0"
 
-import requests
+import requests as requests
 import xmltodict
-
 
 
 def get_content(*args, **kwargs):
